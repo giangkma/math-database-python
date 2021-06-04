@@ -24,8 +24,6 @@ class LoginDataSchema(Schema):
 
 
 class RegisterDataSchema(Schema):
-    role = fields.String(required=True, metadata={
-        "description": "Role of the user (student or teacher)"})
     name = fields.String(required=True, metadata={
         "description": "Full name of the user"})
     username = fields.String(required=True, metadata={

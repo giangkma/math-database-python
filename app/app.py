@@ -15,7 +15,6 @@ def create_app():
     configure_routes(app)
     configure_cache(app)
     configure_mongodb(app)
-
     return app
 
 

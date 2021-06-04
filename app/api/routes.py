@@ -3,7 +3,7 @@ from typing import List
 from flask import Flask
 from flask_smorest import Api, Blueprint
 
-from app.api.rest.questions import api as questions_api_v1
+from app.api.rest.question import api as questions_api_v1
 from app.api.rest.auth import api as auth_api_v1
 
 

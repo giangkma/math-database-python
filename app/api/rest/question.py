@@ -1,12 +1,12 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 from flask_smorest.pagination import PaginationParameters
-from flask import jsonify
+from flask import jsonify, make_response
 
-from app.api.business.questions import findQuestionById
-from app.api.schema.questions import QuestionQuerySchema, QuestionSchema, UpdateQuestionSchema, CheckAnswerQuestionSchema
+from app.api.business.question import findQuestionById
+from app.api.schema.question import QuestionQuerySchema, QuestionSchema, UpdateQuestionSchema, CheckAnswerQuestionSchema
 from app.cache import cache
-from app.model.questions import Question
+from app.model.question import Questions
 
 api = Blueprint(
     "Questions API",
@@ -17,14 +17,14 @@ api = Blueprint(
 
 
 @api.route("")
-class Questions(MethodView):
+class QuestionsAPI(MethodView):
     @classmethod
     @api.arguments(QuestionQuerySchema, location="query")
     @api.paginate()
     @api.response(200, QuestionSchema(many=True))
     def get(cls, recipe_args: dict, pagination_parameters: PaginationParameters):
         """List questions"""
-        result = Question.objects(
+        result = Questions.objects(
             **recipe_args).paginate(pagination_parameters.page, pagination_parameters.page_size)
         pagination_parameters.item_count = result.total
         return result.items
@@ -34,13 +34,13 @@ class Questions(MethodView):
     @api.response(201, QuestionSchema)
     def post(cls, question_data: dict):
         """Add a new question"""
-        item = Question(**question_data)
+        item = Questions(**question_data)
         item.save()
         return item
 
 
 @api.route("/<question_id>")
-class Question(MethodView):
+class QuestionAPI(MethodView):
     @classmethod
     @api.response(200, QuestionSchema)
     @cache.memoize(timeout=30)
@@ -71,15 +71,11 @@ class Question(MethodView):
     @api.response(200)
     def post(cls, data: dict, question_id: str):
         """Check answer of question"""
-        if not data:
-            return jsonify({
-                "message": "Hãy gửi kèm câu trả lời của bạn !"
-            })
         item = findQuestionById(question_id).first()
         if item["correctAnswer"] == data["answer"]:
-            return jsonify({
+            return make_response(jsonify({
                 "correct": True
-            })
-        return jsonify({
+            }))
+        return make_response(jsonify({
             "correct": False
-        })
+        }))
